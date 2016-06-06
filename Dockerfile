@@ -15,7 +15,7 @@ RUN apt-get -qy update && apt-get -qy upgrade && locale-gen en_US.UTF-8 && expor
 	apt-get -qy update && apt-get -qy install git make re2c libpcre3-dev libmemcached-dev pkg-config nginx git zip --fix-missing && \
 	apt-get -qy --force-yes install php7.0-fpm php7.0-curl php7.0-cli php7.0-common php7.0-json php7.0-opcache \
 	php7.0-mysql php7.0-phpdbg php7.0-gd php7.0-imap php7.0-ldap php7.0-pgsql php7.0-pspell php7.0-recode \
-	php7.0-mcrypt php7.0-tidy php7.0-dev php7.0-intl php7.0-gd && \
+	php7.0-mbstring php7.0-mcrypt php7.0-tidy php7.0-dev php7.0-intl php7.0-gd && \
 	apt-get clean && \
     rm -rf /var/lib/apt/lists/* \
            /tmp/* \
