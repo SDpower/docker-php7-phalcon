@@ -21,15 +21,17 @@ RUN apt-get -qy update && apt-get -qy upgrade && locale-gen en_US.UTF-8 && expor
            /tmp/* \
            /var/tmp/*
 
-RUN cd ~ && \
-	git clone https://github.com/phalcon/zephir && \
-	cd zephir && \
-	./install -c
+RUN pecl channel-update pecl.php.net && \
+pecl config-set preferred_state beta
+
+# Install ext-phalcon
+ADD installers/phalcon.sh phalcon.sh
+RUN bash phalcon.sh && rm phalcon.sh
 
 #Add more for php7 extension
 ADD php7/mods-available/*.ini /etc/php/7.0/mods-available/
 ADD php7/lib/*.so /usr/lib/php/20151012/
-RUN phpenmod phalcon && phpenmod memcached && phpenmod redis
+RUN phpenmod phalcon memcached redis
 
 #ulimit tool
 RUN touch /usr/bin/getulimit && \
@@ -37,9 +39,12 @@ RUN touch /usr/bin/getulimit && \
 	 echo "#!/bin/bash" >> /usr/bin/getulimit && \
 	 echo "ulimit -Ha" >> /usr/bin/getulimit
 
+# Cleanup package manager
+RUN apt-get autoremove && \
+    apt-get autoclean && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/php5
 
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #ssh service (remove phusion restriction)
 RUN rm -f /etc/service/sshd/down
