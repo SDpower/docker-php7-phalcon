@@ -6,6 +6,7 @@ ENV HOME /root
 RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 CMD ["/sbin/my_init"]
 ENV DEBIAN_FRONTEND noninteractive
+ENV PHP_MEMORY_LIMIT=512M
 
 # Update software list, install php-nginx & clear cache
 RUN apt-get -qy update && apt-get -qy upgrade && locale-gen en_US.UTF-8 && export LANG=en_US.UTF-8 && \
@@ -50,11 +51,19 @@ RUN sed -i "s/sendfile on/sendfile off/"                                /etc/ngi
 RUN mkdir -p                                                            /var/www
 
 # Configure PHP
-RUN sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathi nfo=0/"                 /etc/php/7.0/fpm/php.ini
-RUN sed -i "s/;date.timezone =.*/date.timezone = Asia\/Taipei/"         /etc/php/7.0/fpm/php.ini
-RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g"                 /etc/php/7.0/fpm/php-fpm.conf
-RUN sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/"                  /etc/php/7.0/cli/php.ini
-RUN sed -i "s/;date.timezone =.*/date.timezone = Asia\/Taipei/"         /etc/php/7.0/cli/php.ini
+RUN sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathi nfo=0/"                 /etc/php/7.0/fpm/php.ini && \
+		sed -i "s/;date.timezone =.*/date.timezone = Asia\/Taipei/"         /etc/php/7.0/fpm/php.ini && \
+		sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g"                 /etc/php/7.0/fpm/php-fpm.conf  && \
+		sed -i "s|memory_limit =.*|memory_limit = ${PHP_MEMORY_LIMIT}|" /etc/php/7.0/fpm/php.ini && \
+		sed -i -e "s|^pm.max_children =.*|pm.max_children = 32|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i -e "s|^pm.start_servers =.*|pm.start_servers = 3|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i -e "s|^pm.min_spare_servers =.*|pm.min_spare_servers = 2|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i -e "s|^pm.max_spare_servers =.*|pm.max_spare_servers = 4|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i -e "s|;listen.mode =.*|listen.mode = 0750|g" /etc/php/7.0/fpm/pool.d/www.conf && \
+    sed -i -e 's|^listen =.*|listen = 0.0.0.0:9000|g' /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i -e 's|^listen.allowed_clients|;listen.allowed_clients|g' /etc/php/7.0/fpm/pool.d/www.conf && \
+		sed -i "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/"                  /etc/php/7.0/cli/php.ini && \
+		sed -i "s/;date.timezone =.*/date.timezone = Asia\/Taipei/"         /etc/php/7.0/cli/php.ini
 
 # Add nginx service
 RUN mkdir                                                               /etc/service/nginx
