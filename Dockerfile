@@ -27,7 +27,9 @@ pecl config-set preferred_state beta
 
 # Install ext-phalcon
 ADD installers/phalcon.sh phalcon.sh
+ADD installers/swoole.sh swoole.sh
 RUN bash phalcon.sh && rm phalcon.sh
+RUN bash swoole.sh && rm swoole.sh
 
 #Add more for php7 extension
 ADD php7/mods-available/*.ini /etc/php/7.0/mods-available/
